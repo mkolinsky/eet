@@ -4,7 +4,19 @@ namespace Mews.Eet
 {
     public class DateTimeWithTimeZone
     {
-        public static TimeZoneInfo CzechTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Central Europe Standard Time");
+        public readonly static TimeZoneInfo CzechTimeZone;
+        
+        static DateTimeWithTimeZone()
+        {
+            try
+            {
+                CzechTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Central Europe Standard Time");
+            }
+            catch
+            {
+                CzechTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Europe/Prague");
+            }
+        }
 
         public DateTimeWithTimeZone(DateTime dateTime, TimeZoneInfo timezoneInfo)
         {

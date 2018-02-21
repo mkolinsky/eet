@@ -22,7 +22,7 @@ namespace Mews.Eet.Communication
             SecurityToken = Convert.ToBase64String(certificate.X509Certificate2.GetRawCertData());
             SignatureMethod = GetSignatureMethodUri(signAlgorithm);
             DigestMethod = GetDigestMethod(signAlgorithm);
-            RsaKey = GetRsaKey(signAlgorithm, certificate.X509Certificate2);
+            RsaKey = certificate.X509Certificate2.GetRSAPrivateKey();
         }
 
         private string SecurityToken { get; }
@@ -31,7 +31,7 @@ namespace Mews.Eet.Communication
 
         private string DigestMethod { get; }
 
-        private RSACryptoServiceProvider RsaKey { get; }
+        private RSA RsaKey { get; }
 
         private Certificate Certificate { get; }
 
@@ -88,23 +88,8 @@ namespace Mews.Eet.Communication
             return xmlDoc;
         }
 
-        private RSACryptoServiceProvider GetRsaKey(SignAlgorithm signAlgorithm, X509Certificate2 certificate)
+        private RSA GetRsaKey(SignAlgorithm signAlgorithm, X509Certificate2 certificate)
         {
-            if (signAlgorithm == SignAlgorithm.Sha1)
-            {
-                return certificate.PrivateKey as RSACryptoServiceProvider;
-            }
-
-            if (signAlgorithm == SignAlgorithm.Sha256)
-            {
-                var key = certificate.PrivateKey as RSACryptoServiceProvider;
-                var cspKeyContainerInfo = new RSACryptoServiceProvider().CspKeyContainerInfo;
-                var cspParameters = new CspParameters(cspKeyContainerInfo.ProviderType, cspKeyContainerInfo.ProviderName, key.CspKeyContainerInfo.KeyContainerName)
-                {
-                    Flags = Certificate.UseMachineKeyStore ? CspProviderFlags.UseMachineKeyStore : CspProviderFlags.NoFlags
-                };
-                return new RSACryptoServiceProvider(cspParameters);
-            }
 
             throw new InvalidEnumArgumentException($"Unsupported signing algorithm {signAlgorithm}.");
         }
